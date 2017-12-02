@@ -18,11 +18,32 @@
           <q-input
             type="url"
             v-model="url"
-            @blur="$v.url.$touch"
+            @blur="checkURL"
             @keyup.enter="login"
           />
         </q-field>
-        <q-field
+
+        <q-progress v-if="checking"
+          indeterminate
+          style="height: 5px"
+        />
+
+        <q-field v-if="sealed"
+          icon="lock outline"
+          label="Unseal key"
+          helper="Enter an unseal key, then press Enter"
+          :error="$v.unsealKey.$error"
+          error-label="Please enter a valid unseal key, then press Enter"
+        >
+          <q-input
+            type="password"
+            v-model="unsealKey"
+            @blur="$v.unsealKey.$touch"
+            @keyup.enter="unseal"
+          />
+        </q-field>
+
+        <q-field v-if="checked"
           icon="list"
           label="Auth Type"
           helper="The type of authentication to use"
@@ -45,7 +66,7 @@
             error-label="Please enter a valid token"
           >
             <q-input
-              type="text"
+              type="password"
               v-model="token"
               @blur="$v.token.$touch"
               @keyup.enter="login"
@@ -119,10 +140,19 @@
 
         <div class="row">
           <q-btn
+            icon="info outline"
+            color="info"
+            class="col-3"
+            :disabled="$v.url.$invalid"
+            @click="health"
+          >
+            Check
+          </q-btn>
+          <q-btn
             icon="lock outline"
             color="primary"
-            class="offset-9 col-3"
-            :disabled="formInvalid"
+            class="offset-6 col-3"
+            :disabled="formInvalid || loading"
             @click="login"
           >
             Login
@@ -136,10 +166,15 @@
 <script>
 import { required } from 'vuelidate/lib/validators'
 import url from '@/util/validators/url'
+import { Toast } from 'quasar'
 
 export default {
   data () {
     return {
+      checking: false,
+      checked: false,
+      sealed: false,
+      loading: false,
       auth: '',
       authOptions: [
         // { label: 'AWS', value: 'aws' }, // requires a bunch of fields
@@ -157,7 +192,8 @@ export default {
       role: '', // for role/jwt auth
       jwt: '', // for role/jwt auth
       user: '', // for user/pass auth
-      pass: '' // for user/pass auth
+      pass: '', // for user/pass auth
+      unsealKey: '' // for unsealing th Vault
     }
   },
   validations: {
@@ -167,6 +203,7 @@ export default {
     jwt: { required },
     user: { required },
     pass: { required },
+    unsealKey: { required },
     url: { required, url }
   },
   computed: {
@@ -185,9 +222,72 @@ export default {
     }
   },
   methods: {
+    checkURL () {
+      this.$v.url.$touch()
+      if (this.$v.url.$invalid) return
+
+      this.checked = false
+      this.checking = true
+      this.sealed = false
+
+      fetch(`${this.url}/v1/sys/health`).then((resp) => {
+        return resp.json()
+      }).then((json) => {
+        if (!json.initialized) {
+          Toast.create.negative({html: 'Vault is not initialized. This must be done using the Vault CLI.', timeout: 5000})
+        } else if (json.sealed) {
+          this.checking = false
+          this.sealed = true
+        } else {
+          this.checking = false
+          this.checked = true
+        }
+      }).catch(() => {
+        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
+        this.checking = false
+      })
+    },
+    health () {
+      if (this.$v.url.$invalid) return
+      fetch(`${this.url}/v1/sys/health`).then((resp) => {
+        return resp.json()
+      }).then((json) => {
+        Toast.create.info({html: `Name: ${json.cluster_name}<br/>Initialized: ${json.initialized}<br/>Sealed: ${json.sealed}<br/>Version: ${json.version}`, timeout: 5000})
+      }).catch(() => {
+        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
+      })
+    },
     login () {
       if (this.formInvalid) return
-      console.log('go')
+      fetch(`${this.url}/v1/sys/health`).then((resp) => {
+        return resp.json()
+      }).then((json) => {
+        Toast.create.negative({html: 'Not yet implemented', timeout: 5000})
+      }).catch(() => {
+        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
+      })
+    },
+    unseal () {
+      if (this.unsealKey === '') return
+      fetch(`${this.url}/v1/sys/unseal`, {
+        method: 'PUT',
+        body: JSON.stringify({ key: this.unsealKey })
+      }).then((resp) => {
+        return resp.json()
+      }).then((json) => {
+        console.log(json)
+        if (json.sealed === false) {
+          Toast.create.positive({html: 'Vault unsealed', timeout: 5000})
+          this.checked = true
+        } else {
+          Toast.create.info({html: `Unseal status: ${json.progress} of ${json.t}`})
+        }
+
+        this.sealed = json.sealed
+        this.unsealKey = ''
+      }).catch((err) => {
+        Toast.create.negative({html: err.message, timeout: 5000})
+      })
     }
   }
 }

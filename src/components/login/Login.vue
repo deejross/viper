@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <img src="~statics/viper-logo.png" alt="Viper" style="-webkit-filter: drop-shadow(1px 1px 0 #777) drop-shadow(-1px -1px 2 #777); filter: drop-shadow(1px 1px 0 #777) drop-shadow(-1px -1px 0 #777);" />
+    <img src="~statics/viper-logo.png" alt="Viper" />
     <h3>Viper</h3>
     <credentials />
   </div>

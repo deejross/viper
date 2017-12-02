@@ -8,7 +8,7 @@ Server-less Web UI for HashiCorp's Vault
 	* Enable it if disabled: `vault write /sys/config/cors enabled=true allowed_origins=*`
 
 ## Features
-* [ ] Multiple Vault instances
+* [X] Multiple Vault instances
 * [ ] Login methods
 	* [ ] AWS
 	* [ ] Google Cloud
@@ -61,7 +61,7 @@ Server-less Web UI for HashiCorp's Vault
 	* [ ] TOTP
 	* [ ] Transit
 * [ ] System
-	* [ ] Seal / unseal
+	* [X] Seal / unseal
 	* [ ] Manage Audit backends
 
 ## Build Setup
