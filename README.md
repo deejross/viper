@@ -10,16 +10,13 @@ Server-less Web UI for HashiCorp's Vault
 ## Features
 * [ ] Multiple Vault instances
 * [ ] Login methods
-	* [ ] Approle
 	* [ ] AWS
 	* [ ] Google Cloud
 	* [ ] Kubernetes
 	* [ ] GitHub
 	* [ ] LDAP
-	* [ ] MFA
 	* [ ] Okta
 	* [ ] RADIUS
-	* [ ] TLS
 	* [ ] Tokens
 	* [ ] Username/password
 * [ ] Auth backend management
@@ -29,7 +26,6 @@ Server-less Web UI for HashiCorp's Vault
 	* [ ] Kubernetes
 	* [ ] GitHub
 	* [ ] LDAP
-	* [ ] MFA
 	* [ ] Okta
 	* [ ] RADIUS
 	* [ ] TLS
