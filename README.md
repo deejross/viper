@@ -1,4 +1,7 @@
 # Viper
+
+![logo](src/statics/viper-logo.png)
+
 Server-less Web UI for HashiCorp's Vault
 
 ## Requirements
