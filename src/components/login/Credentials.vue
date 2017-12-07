@@ -167,6 +167,7 @@
 import { required } from 'vuelidate/lib/validators'
 import url from '@/util/validators/url'
 import { Toast } from 'quasar'
+import client from '@/util/vault/client'
 
 export default {
   data () {
@@ -230,9 +231,9 @@ export default {
       this.checking = true
       this.sealed = false
 
-      fetch(`${this.url}/v1/sys/health`).then((resp) => {
-        return resp.json()
-      }).then((json) => {
+      client.setUrl(this.url)
+
+      client.health().then((json) => {
         if (!json.initialized) {
           Toast.create.negative({html: 'Vault is not initialized. This must be done using the Vault CLI.', timeout: 5000})
         } else if (json.sealed) {
@@ -242,16 +243,15 @@ export default {
           this.checking = false
           this.checked = true
         }
-      }).catch(() => {
+      }).catch((err, resp) => {
+        console.log(err.message, resp)
         Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
         this.checking = false
       })
     },
     health () {
       if (this.$v.url.$invalid) return
-      fetch(`${this.url}/v1/sys/health`).then((resp) => {
-        return resp.json()
-      }).then((json) => {
+      client.health().then((json) => {
         Toast.create.info({html: `Name: ${json.cluster_name}<br/>Initialized: ${json.initialized}<br/>Sealed: ${json.sealed}<br/>Version: ${json.version}`, timeout: 5000})
       }).catch(() => {
         Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
@@ -259,9 +259,7 @@ export default {
     },
     login () {
       if (this.formInvalid) return
-      fetch(`${this.url}/v1/sys/health`).then((resp) => {
-        return resp.json()
-      }).then((json) => {
+      client.login(this.auth, this.token).then((json) => {
         Toast.create.negative({html: 'Not yet implemented', timeout: 5000})
       }).catch(() => {
         Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
@@ -269,10 +267,7 @@ export default {
     },
     unseal () {
       if (this.unsealKey === '') return
-      fetch(`${this.url}/v1/sys/unseal`, {
-        method: 'PUT',
-        body: JSON.stringify({ key: this.unsealKey })
-      }).then((resp) => {
+      client.unseal(this.unsealKey).then((resp) => {
         return resp.json()
       }).then((json) => {
         console.log(json)
