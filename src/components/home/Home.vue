@@ -4,6 +4,8 @@
       <q-spinner-gears size="50px" color="primary"></q-spinner-gears>
     </q-inner-loading>
 
+    <q-btn @click="logout">Logout</q-btn>
+
     <ul v-if="!loading">
       <li v-for="(mount, name) in mounts" :key="name">
         {{ name }} - {{ mount.description }}
@@ -28,12 +30,15 @@ export default {
       this.loading = true
 
       client.mounts().then((json) => {
-        this.mounts = json
+        this.mounts = json.data
         this.loading = false
-      }).catch(() => {
-        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct.', timeout: 5000})
+      }).catch((err) => {
+        Toast.create.negative({html: err, timeout: 5000})
         this.loading = false
       })
+    },
+    logout () {
+      client.logout()
     }
   },
   mounted () {

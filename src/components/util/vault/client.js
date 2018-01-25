@@ -23,6 +23,9 @@ export default {
   setToken (t) {
     LocalStorage.set(keyToken, t)
   },
+  logout () {
+    LocalStorage.removeItem(keyToken)
+  },
   health () {
     let url = this.relay()
     return fetch(`${url}/v1/sys/health`, {
@@ -50,9 +53,9 @@ export default {
     if (method === 'token') {
       return this.lookup(userOrToken)
     } else {
-      return fetch(`${url}/auth/${method}/login`, {
+      return fetch(`${url}/v1/auth/${method}/login/${userOrToken}`, {
         method: 'POST',
-        body: JSON.stringify({ username: userOrToken, password }),
+        body: JSON.stringify({ password }),
         headers: {
           'X-Forward-To': this.url()
         }
@@ -86,10 +89,12 @@ export default {
     })
   },
   mounts () {
+    let token = this.token()
     let url = this.relay()
     return fetch(`${url}/v1/sys/mounts`, {
       headers: {
-        'X-Forward-To': this.url()
+        'X-Forward-To': this.url(),
+        'X-Vault-Token': token
       }
     }).then((resp) => {
       return resp.json()

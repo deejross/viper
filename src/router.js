@@ -40,7 +40,7 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/login') {
     next()
     return
-  } else if (client.url() === null || client.token() === null) {
+  } else if (client.relay() === null || client.url() === null || client.token() === null) {
     next('/login')
     return
   }

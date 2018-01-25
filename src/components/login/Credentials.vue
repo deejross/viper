@@ -261,10 +261,21 @@ export default {
     },
     login () {
       if (this.formInvalid) return
-      client.login(this.auth, this.token).then((json) => {
-        Toast.create.negative({html: 'Not yet implemented', timeout: 5000})
-      }).catch(() => {
-        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct.', timeout: 5000})
+      client.login(this.auth, this.token || this.user, this.pass).then((resp) => {
+        if (resp.status !== 200) {
+          throw new Error(resp.statusText)
+        }
+        return resp.json()
+      }).then((json) => {
+        console.log(json)
+        if (json.auth !== undefined && json.auth.client_token !== '') {
+          client.setToken(json.auth.client_token)
+          this.$router.push('/')
+        } else {
+          throw new Error('unexpected response from Vault')
+        }
+      }).catch((err) => {
+        Toast.create.negative({html: 'Unable to login: ' + err, timeout: 5000})
       })
     },
     unseal () {
