@@ -1,9 +1,16 @@
 const keyUrl = 'url'
+const keyRelay = 'relay'
 const keyToken = 'token'
 
 import { LocalStorage } from 'quasar'
 
 export default {
+  relay () {
+    return LocalStorage.get.item(keyRelay) + '/vault'
+  },
+  setRelay (u) {
+    LocalStorage.set(keyRelay, u)
+  },
   url () {
     return LocalStorage.get.item(keyUrl)
   },
@@ -17,36 +24,47 @@ export default {
     LocalStorage.set(keyToken, t)
   },
   health () {
-    let url = this.url()
-    return fetch(`${url}/v1/sys/health`, { mode: 'cors' }).then((resp) => {
+    let url = this.relay()
+    return fetch(`${url}/v1/sys/health`, {
+      headers: {
+        'X-Forward-To': this.url()
+      }
+    }).then((resp) => {
       return resp.json()
     })
   },
   unseal (key) {
-    let url = this.url()
+    let url = this.relay()
     return fetch(`${url}/v1/sys/unseal`, {
       method: 'PUT',
-      body: JSON.stringify({ key })
+      body: JSON.stringify({ key }),
+      headers: {
+        'X-Forward-To': this.url()
+      }
     }).then((resp) => {
       return resp.json()
     })
   },
   login (method, userOrToken, password) {
-    let url = this.url()
+    let url = this.relay()
     if (method === 'token') {
       return this.lookup(userOrToken)
     } else {
       return fetch(`${url}/auth/${method}/login`, {
         method: 'POST',
-        body: JSON.stringify({ username: userOrToken, password })
+        body: JSON.stringify({ username: userOrToken, password }),
+        headers: {
+          'X-Forward-To': this.url()
+        }
       })
     }
   },
   lookup (t) {
     let token = this.token()
-    let url = this.url()
+    let url = this.relay()
     return fetch(`${url}/v1/auth/token/lookup/${t}`, {
       headers: {
+        'X-Forward-To': this.url(),
         'X-Vault-Token': token
       }
     }).then((resp) => {
@@ -55,11 +73,12 @@ export default {
   },
   capabilitiesSelf (path) {
     let token = this.token()
-    let url = this.url()
+    let url = this.relay()
     return fetch(`${url}/v1/sys/capabilities-self`, {
       method: 'POST',
       body: JSON.stringify({ path }),
       headers: {
+        'X-Forward-To': this.url(),
         'X-Vault-Token': token
       }
     }).then((resp) => {
@@ -67,8 +86,12 @@ export default {
     })
   },
   mounts () {
-    let url = this.url()
-    return fetch(`${url}/v1/sys/mounts`).then((resp) => {
+    let url = this.relay()
+    return fetch(`${url}/v1/sys/mounts`, {
+      headers: {
+        'X-Forward-To': this.url()
+      }
+    }).then((resp) => {
       return resp.json()
     })
   }

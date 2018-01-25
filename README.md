@@ -2,13 +2,10 @@
 
 ![logo](src/statics/viper-logo.png)
 
-Server-less Web UI for HashiCorp's Vault
+Web UI for HashiCorp's Vault
 
 ## Requirements
 * At least one Vault instance installed and running
-* CORS enabled
-	* Check if enabled: `vault read /sys/config/cors`
-	* Enable it if disabled: `vault write /sys/config/cors enabled=true allowed_origins=*`
 
 ## Features
 * [X] Multiple Vault instances
@@ -68,6 +65,16 @@ Server-less Web UI for HashiCorp's Vault
 	* [ ] Manage Audit backends
 
 ## Build Setup
+### Requirements
+* Go
+* Node.js
+
+**NOTE**: Since CORS is not available on a sealed Vault, a small reverse proxy is used to relay requests from the UI to the desired Vault instance. When developing Viper, you must ensure the reverse proxy is running:
+```shell
+go run main.go
+```
+
+Once started, `quasar dev` can be run in a separate terminal session to start the frontend.
 
 ``` bash
 # install dependencies

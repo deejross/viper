@@ -224,6 +224,8 @@ export default {
   },
   methods: {
     checkURL () {
+      client.setRelay(window.location.protocol + '//' + window.location.host)
+
       this.$v.url.$touch()
       if (this.$v.url.$invalid) return
 
@@ -245,7 +247,7 @@ export default {
         }
       }).catch((err, resp) => {
         console.log(err.message, resp)
-        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
+        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct.', timeout: 5000})
         this.checking = false
       })
     },
@@ -254,7 +256,7 @@ export default {
       client.health().then((json) => {
         Toast.create.info({html: `Name: ${json.cluster_name}<br/>Initialized: ${json.initialized}<br/>Sealed: ${json.sealed}<br/>Version: ${json.version}`, timeout: 5000})
       }).catch(() => {
-        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
+        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct.', timeout: 5000})
       })
     },
     login () {
@@ -262,7 +264,7 @@ export default {
       client.login(this.auth, this.token).then((json) => {
         Toast.create.negative({html: 'Not yet implemented', timeout: 5000})
       }).catch(() => {
-        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
+        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct.', timeout: 5000})
       })
     },
     unseal () {

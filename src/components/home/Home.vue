@@ -31,7 +31,7 @@ export default {
         this.mounts = json
         this.loading = false
       }).catch(() => {
-        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct, and that CORS is enabled.', timeout: 5000})
+        Toast.create.negative({html: 'Unable to connect to Vault. Please ensure the URL is correct.', timeout: 5000})
         this.loading = false
       })
     }

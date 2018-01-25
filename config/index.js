@@ -39,12 +39,20 @@ module.exports = {
     // you need to avoid clearing out the console, so set this
     // to "false", otherwise you can set it to "true" to always
     // have only the messages regarding your last (re)compilation.
-    clearConsoleOnRebuild: false,
+    clearConsoleOnRebuild: true,
 
     // Proxy your API if using any.
     // Also see /build/script.dev.js and search for "proxy api requests"
     // https://github.com/chimurai/http-proxy-middleware
-    proxyTable: {}
+    proxyTable: {
+      '/vault': {
+        target: 'http://127.0.0.1:8000/vault',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/vault': ''
+        }
+      } 
+    }
   }
 }
 
